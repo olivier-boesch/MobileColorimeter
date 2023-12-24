@@ -4,9 +4,15 @@ from android_permissions import AndroidPermissions
 from screens.mainscreen import MainScreen
 from screens.analysisscreen import AnalysisScreen
 from kivy.logger import Logger
+from kivy.utils import platform
 
 
 __version__ = "0.2"
+
+if platform not in ["android", "ios"]:
+    Logger.info("Config: disabling multitouch on desktop")
+    from kivy.config import Config
+    Config.set('input', 'mouse', 'mouse,disable_multitouch')
 
 
 class MyScreenManager(ScreenManager):
@@ -14,10 +20,10 @@ class MyScreenManager(ScreenManager):
     def change_screen(self, direction):
         Logger.info(f"Ui: Moving \"{direction}\"")
         self.transition.direction = direction
-        if direction == 'right':
+        if direction == 'left':
             cur = self.screen_names.index(self.current)
             self.current = self.screen_names[(cur - 1) % len(self.screen_names)]
-        if direction == 'left':
+        if direction == 'right':
             cur = self.screen_names.index(self.current)
             self.current = self.screen_names[(cur + 1) % len(self.screen_names)]
 
@@ -34,17 +40,18 @@ class MyScreenManager(ScreenManager):
             if screen.name == screen_name:
                 return screen
 
-    def delete_session(self, name):
-        Logger.info(f"Session: Deleting \"{name}\"")
-        cur = self.screen_names.index(name)
+    def delete_session(self, screen):
+        Logger.info(f"Session: Deleting \"{screen.name}\"")
+        cur = self.screen_names.index(screen.name)
         self.transition.direction = 'down'
-        scr = self.find_screen(name)
-        self.remove_widget(scr)
+        self.remove_widget(screen)
         Logger.info(f"Session: Updated screens list {self.screen_names!s}")
         self.current = self.screen_names[(cur - 1) % len(self.screen_names)]
 
 
 class MobileColorimeterApp(App):
+    title = "Mobile Colorimter"
+    icon = "images/logo.png"
 
     def build(self):
         self.sm = MyScreenManager()
