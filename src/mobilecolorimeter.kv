@@ -1,0 +1,59 @@
+<AnalysisScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        # upper bar
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: dp(50)
+            Label:
+            Button:
+                size_hint_x: None
+                width: self.height
+                text: "D"
+                on_release: app.delete_session(root.name)
+        Label:
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.2
+            Button:
+                size_hint_x: None
+                width: self.height
+                text: "<"
+                on_release: app.sm.change_screen('left')
+            Label:
+            Button:
+                size_hint_x: None
+                width: self.height
+                text: ">"
+                on_release: app.sm.change_screen('right')
+
+
+
+<MainScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(10)
+        spacing: dp(5)
+        Image:
+            size_hint_y: 0.3
+            source: "images/logo.png"
+        RstDocument:
+            document_root: "./docs"
+            source: "intro.rst"
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.2
+            Button:
+                size_hint_x: None
+                width: self.height
+                text: "<"
+                on_release: app.sm.change_screen('left')
+            Button:
+                text: "Create Analysis Session"
+                on_release: app.add_session()
+            Button:
+                size_hint_x: None
+                width: self.height
+                text: ">"
+                on_release: app.sm.change_screen('right')
