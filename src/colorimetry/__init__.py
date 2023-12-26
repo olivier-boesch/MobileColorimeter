@@ -157,18 +157,23 @@ class Session:
         coefs, stats = poly.polyfit(x=[s.concentration for s in self.samples],
                                     y=[s.absorbance for s in self.samples],
                                     deg=[1], full=True)
-        # TODO: problème avec R² (non toujours renvoyé)
-        r2 = stats[0][0]
+        try:
+            r2 = 1-stats[0][0]
+        except IndexError:
+            r2 = None
         return coefs, r2
 
-    def compute_concentration_from_absorbance(self, absorbance: float) -> float:
+    def compute_concentration_from_sample(self, sample: Sample) -> float:
         """
         computes the predicted concentration from given absorbance and the session data samples
         """
+        sample.reference = self.reference
         coeffs = poly.polyfit(y=[s.concentration for s in self.samples],
                               x=[s.absorbance for s in self.samples],
                               deg=[1])
-        return coeffs[0] + coeffs[1] * absorbance
+        concentration = float(coeffs[1] * sample.absorbance)
+        log.debug(f"computed concentration: {concentration}")
+        return concentration
 
     def to_file(self, filename: str) -> None:
         """

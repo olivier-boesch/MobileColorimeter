@@ -6,7 +6,7 @@ from screens.analysisscreen import AnalysisScreen
 from kivy.logger import Logger
 from kivy.utils import platform
 from kivy.uix.rst import RstDocument
-from popups.capturepopup import CapturePopup, ConcentrationPopup
+from popups import CapturePopup, ConcentrationPopup
 from kivy.properties import NumericProperty
 from kivy.factory import Factory
 from kivy.base import Builder
@@ -18,7 +18,7 @@ LINKS = {
     'kivy': "https://kivy.org/"
 }
 
-__version__ = "0.3"
+__version__ = "0.5"
 
 if platform not in ["android", "ios"]:
     Logger.info("Config: disabling multitouch on desktop")
@@ -73,6 +73,11 @@ Builder.load_string(kv)
 
 
 class InfoRstDocument(RstDocument):
+
+    def on_source(self, instance, value):
+        super().on_source(instance, value)
+        self.text = self.text.replace('{version}', App.get_running_app().version)
+
     def on_ref_press(self, node, ref):
         try:
             webbrowser.open(LINKS[ref])
@@ -129,6 +134,7 @@ class MobileColorimeterApp(App):
     icon = "images/logo.png"
     capture_popup = CapturePopup()
     concentration_popup = ConcentrationPopup()
+    version = __version__
 
     def build(self):
         self.sm = MyScreenManager()

@@ -1,4 +1,4 @@
-Mobile Colorimeter
+Mobile Colorimeter (v.{version})
 ==================
 Colorimètre pour tablette et mobiles.
 L'application utilise le capteur photo
