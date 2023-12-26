@@ -59,7 +59,7 @@ class Sample:
         computes and returns the transmittance for this sample (value from 0.0 to 1.0)
         """
         if self.reference is None:
-            raise ValueError("Must provide a reference to compute transmittance of sample")
+            return None
         sample_intensity = self.intensity
         reference_intensity = self.reference.intensity
         transmittance_value = sample_intensity / reference_intensity
@@ -71,6 +71,8 @@ class Sample:
         """
         computes and returns abdorbance for this sample in arbritrary units (A.U.)
         """
+        if self.transmittance is None:
+            return None
         absorbance_value = - log10(self.transmittance)
         log.debug(f"computed absorbance: {absorbance_value}")
         return absorbance_value
@@ -137,12 +139,12 @@ class Session:
             raise TypeError("parameter must be an int or Sample object")
 
     @property
-    def absorbance_data_points(self) -> list[tuple[float, float]]:
+    def absorbance_data_points(self) -> list[tuple[float, float, "Sample"]]:
         """
         computes list of data points (concentration, absorbance) for plotting purpose
         """
         sorted_samples = sorted(self.samples, key=lambda o: o.concentration)
-        return [(s.concentration, s.absorbance) for s in sorted_samples]
+        return [(s.concentration, s.absorbance, s) for s in sorted_samples]
 
     @property
     def absorbance_data_line(self) -> tuple[list[float], float]:

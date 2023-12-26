@@ -13,10 +13,12 @@ Développement: Olivier Boesch
 
 ----
 
-Icone_ : iconfield de the noun project
+icone_ de l'application: iconfield de "the noun project".
+
+icones de boutons : Justin Blake (trash), Lero Keller (baseline), Sandiatresna (sample), SBTS (next/previous) de "the noun project".
 
 L'application est développée en python avec la bibliothèque kivy_
 
 .. _github: https://github.com/olivier-boesch/MobileColorimeter
-.. _Icone: https://thenounproject.com/icon/spectrometer-5707903/
+.. _icone: https://thenounproject.com/icon/spectrometer-5707903/
 .. _kivy: https://kivy.org/
