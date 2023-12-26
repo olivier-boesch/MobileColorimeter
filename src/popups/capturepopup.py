@@ -67,6 +67,7 @@ kv_str = """
             
 <ConcentrationPopup>
     title: "Concentration (mol/L)"
+    auto_dismiss: False
     size_hint: 0.5, 0.5
     BoxLayout:
         orientation: "vertical"
