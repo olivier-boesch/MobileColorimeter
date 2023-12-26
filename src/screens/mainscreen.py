@@ -14,6 +14,13 @@ kv_str = """
             document_root: "./docs"
             source: "intro.rst"
             colors: {'background': '000000ff', 'link': 'ce5c00ff', 'paragraph': 'ffffffff', 'title': '204a87ff', 'bullet': '000000ff'}
+        Button:
+            size_hint_y: None
+            height: dp(70)
+            background_normal: 'images/blank.png'
+            text: "Créer session d'analyse"
+            font_size: '20sp'
+            on_release: app.add_session()
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: None
@@ -23,10 +30,7 @@ kv_str = """
                 size_hint_x: None
                 width: self.height
                 on_release: app.sm.change_screen('left')
-            Button:
-                background_normal: 'images/blank.png'
-                text: "Créer session d'analyse"
-                on_release: app.add_session()
+            Label:
             ButtonIcon:
                 source: "images/next.png"
                 size_hint_x: None

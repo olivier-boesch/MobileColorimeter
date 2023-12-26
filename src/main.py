@@ -18,7 +18,7 @@ LINKS = {
     'kivy': "https://kivy.org/"
 }
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 if platform not in ["android", "ios"]:
     Logger.info("Config: disabling multitouch on desktop")
