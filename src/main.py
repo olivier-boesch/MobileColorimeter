@@ -32,13 +32,22 @@ kv = """
     message: ''
     ok_callbkack: None
     callback_data: None
-    size_hint: 0.5, 0.5
+    size_hint: 0.5, None
+    height: dp(70) + box.minimum_height
     BoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        id: box
         orientation: 'vertical'
+        spacing: dp(10)
         Label:
+            size_hint_y: None
+            height: self.texture_size[1]
             id: label
             text: root.message
         BoxLayout:
+            size_hint_y: None
+            height: dp(50)
             orientation: 'horizontal'
             Button:
                 text: 'Annuler'
