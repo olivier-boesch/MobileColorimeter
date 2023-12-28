@@ -112,7 +112,10 @@ kv_str = """
                 size_hint_x: None
                 width: self.height
                 on_release: app.sm.change_screen('left')
-            Label:
+            Button:
+                background_normal: 'images/blank.png'
+                text: 'Exporter Doocument'
+                on_release: root.export_report()
             ButtonIcon:
                 source: "images/next.png"
                 size_hint_x: None
@@ -252,3 +255,6 @@ class AnalysisScreen(Screen):
             self.ids.concentration_button.disabled = True
         except TypeError:
             self.ids.concentration_button.disabled = True
+
+    def export_report(self):
+        self.session.export_report(self.number)

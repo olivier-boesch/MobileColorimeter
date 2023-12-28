@@ -8,6 +8,8 @@ Olivier Boesch (c) 2023
 from math import log10
 from numpy.polynomial import polynomial as poly
 import logging
+from reportlab.lib import pagesizes, styles, units
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 
 log = logging.getLogger("Colorimetry")
 log.setLevel(logging.DEBUG)
@@ -120,6 +122,7 @@ class Session:
         """
         sample.reference = self._reference
         self.samples.append(sample)
+        self.samples.sort(key=lambda s: s.concentration)
 
     def clear_samples(self) -> None:
         """
@@ -143,8 +146,7 @@ class Session:
         """
         computes list of data points (concentration, absorbance) for plotting purpose
         """
-        sorted_samples = sorted(self.samples, key=lambda o: o.concentration)
-        return [(s.concentration, s.absorbance, s) for s in sorted_samples]
+        return [(s.concentration, s.absorbance, s) for s in self.samples]
 
     @property
     def absorbance_data_line(self) -> tuple[list[float], float]:
@@ -175,37 +177,22 @@ class Session:
         log.debug(f"computed concentration: {concentration}")
         return concentration
 
-    def to_file(self, filename: str) -> None:
-        """
-        saves session informations to file
-        """
-        with open(filename, mode='w', encoding="utf8") as f:
-            f.write(str(self))
-
-
-def test_sample():
-    from math import isclose, log10
-    s = Sample(red_value=0, green_value=60, blue_value=120, concentration=1.0)
-    assert isclose(s.intensity, 60)
-    ref = Sample(red_value=100, green_value=100, blue_value=150, concentration=0.0)
-    s.reference = ref
-    assert isclose(s.transmittance, s.intensity / ref.intensity)
-    assert isclose(s.absorbance, - log10(s.intensity / ref.intensity))
-    print(s.absorbance, s.transmittance, s.intensity, ref.intensity, s, ref)
-
-
-def test_session():
-    session = Session()
-    s = Sample(red_value=0, green_value=60, blue_value=120, concentration=1.0)
-    session.add_sample(s)
-    s = Sample(red_value=0, green_value=60, blue_value=120, concentration=1.0)
-    session.add_sample(s)
-    ref = Sample(red_value=100, green_value=100, blue_value=150, concentration=0.0)
-    session.reference = ref
-    print(session)
-    print(session.compute_concentration_from_absorbance(0.56))
-
-
-if __name__ == '__main__':
-    test_sample()
-    test_session()
+    def export_report(self, number):
+        doc = SimpleDocTemplate(f"report{number}.pdf", pagesize=pagesizes.A4)
+        elements = []
+        p = Paragraph(f"Analyse par colormétrie (session n°{number})", style=styles.ParagraphStyle(name="title", font="Arial", fontSize=25, align="center"))
+        elements.append(p)
+        elements.append(Spacer(height=1 * units.cm, width=pagesizes.A4[0]))
+        data = [["C (mol/L)", "R", "G", "B", "I (U.A.)", "T (%)", "A (U.A.)"]]
+        for s in self.samples:
+            data.append([f"{s.concentration:.3e}", f"{s.red_value:d}", f"{s.green_value:d}", f"{s.blue_value:d}", f"{s.intensity:.3f}", f"{s.transmittance*100:.2f}", f"{s.absorbance:.3f}"])
+        t = Table(data=data, style=TableStyle(name="samples", font="Arial", fontSize=10, align="center"))
+        elements.append(t)
+        elements.append(Spacer(height=1 * units.cm, width=pagesizes.A4[0]))
+        coefs, r2 = self.absorbance_data_line
+        text = f"Equation : A = {coefs[1]:.3e} C"
+        if r2 is not None:
+            text += f", R² = {r2:.5f}"
+        p = Paragraph(text=text, style=styles.ParagraphStyle(name="body", font="Arial", fontSize=12, align="center", bold=True))
+        elements.append(p)
+        doc.build(elements)

@@ -8,7 +8,7 @@ from kivy.logger import Logger
 from kivy.clock import mainthread, Clock
 from kivy.uix.textinput import TextInput
 import re
-import numpy as np
+from PIL import Image
 
 kv_str = """
 
@@ -131,11 +131,22 @@ class CustomPreview(Preview):
 
     def analyze_pixels_callback(self, pixels, image_size, image_pos,
                                 image_scale, mirror):
+        pil_image = Image.frombytes(mode='RGBA', size=image_size,
+                                    data=pixels)
         w, h = image_size
-        img = np.fromstring(pixels, np.uint8).reshape(image_size[1], image_size[0], 4)
-        cropped = img[w//2-self.analyse_w//2:w//2+self.analyse_w//2, h//2-self.analyse_h//2:h//2+self.analyse_h//2]
-        mean_color = cropped.mean(axis=0).mean(axis=0)
-        self.set_rgb_values(mean_color)
+        img = pil_image.crop((w / 2 - self.analyse_w / 2, h / 2 - self.analyse_h / 2, w / 2 + self.analyse_w / 2,
+                              h / 2 + self.analyse_h / 2))
+        r = 0
+        g = 0
+        b = 0
+        N = img.size[0] * img.size[1]
+        for i in range(img.size[0]):
+            for j in range(img.size[1]):
+                ri, gi, bi, _ = img.getpixel((i, j))
+                r += ri
+                g += gi
+                b += bi
+        self.set_rgb_values((r/N, g/N, b/N))
 
     @mainthread
     def set_rgb_values(self, mean_color):
@@ -201,7 +212,7 @@ class CapturePopup(Popup):
     def on_open(self):
         self.ids['preview'].connect_camera(camera_id='back',
                                            enable_video=False,
-                                           enable_analyze_pixels=True)
+                                           enable_analyze_pixels=True, mirror=False)
         self.ids.preview.analyze_on = True
 
     def on_dismiss(self):

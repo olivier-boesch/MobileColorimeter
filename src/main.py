@@ -9,7 +9,7 @@ from kivy.uix.rst import RstDocument
 from popups import CapturePopup, ConcentrationPopup
 from kivy.properties import NumericProperty
 from kivy.factory import Factory
-from kivy.base import Builder
+from kivy.lang import Builder
 import webbrowser
 
 LINKS = {

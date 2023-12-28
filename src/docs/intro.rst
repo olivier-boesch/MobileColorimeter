@@ -1,5 +1,5 @@
 Mobile Colorimeter (v.{version})
-==================
+================================
 Colorimètre pour tablette et mobiles.
 L'application utilise le capteur photo
 des appareils mobiles pour déterminer la couleur des solution, calculer l'aborbance

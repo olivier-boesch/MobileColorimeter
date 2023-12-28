@@ -37,7 +37,7 @@ version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.2.1,numpy,docutils,kivy_garden.graph,gestures4kivy
+requirements = python3,kivy==2.2.1,docutils,kivy_garden.graph,gestures4kivy,pillow,numpy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -402,7 +402,7 @@ ios.codesign.allowed = false
 [buildozer]
 
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
-log_level = 2
+log_level = 1
 
 # (int) Display warning if buildozer is run as root (0 = False, 1 = True)
 warn_on_root = 1
@@ -411,7 +411,7 @@ warn_on_root = 1
 # build_dir = ./.buildozer
 
 # (str) Path to build output (i.e. .apk, .aab, .ipa) storage
-# bin_dir = ./bin
+bin_dir = ./bin
 
 #    -----------------------------------------------------------------------------
 #    List as sections
