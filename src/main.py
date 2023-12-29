@@ -62,7 +62,7 @@ kv = """
     message: ''
     size_hint: None, None
     height: dp(70) + box.minimum_height
-    width: dp(400)
+    width: dp(450)
     BoxLayout:
         size_hint_y: None
         height: self.minimum_height
@@ -75,6 +75,8 @@ kv = """
             id: label
             text: root.message
         Button:
+            size_hint_y: None
+            height: dp(50)
             text: 'Ok'
             on_release: root.dismiss()
 
