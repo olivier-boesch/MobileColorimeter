@@ -20,7 +20,7 @@ kv_str = """
             background_normal: 'images/blank.png'
             text: "Créer session d'analyse"
             font_size: '20sp'
-            on_release: app.add_session()
+            on_release: app.sm.add_session()
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: None

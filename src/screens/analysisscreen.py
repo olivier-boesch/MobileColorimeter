@@ -52,7 +52,7 @@ kv_str = """
                 source: "images/trash.png"
                 size_hint_x: None
                 width: self.height
-                on_release: app.ask_delete_session(root)
+                on_release: app.sm.ask_delete_session(root)
         BoxLayout:
             orientation: 'vertical'
             padding: dp(5)
@@ -63,7 +63,7 @@ kv_str = """
                 Label:
                     text: 'Concentration (mol/L)'
                 Label:
-                    text: 'Absorbance'
+                    text: 'Absorbance (U.A.)'
             DataGrid:
                 id: data_grid
                 viewclass: 'DataGridItem'
@@ -101,6 +101,7 @@ kv_str = """
                 id: concentration_button
                 disabled: True
                 background_normal: 'images/blank.png'
+                background_disabled_normal: 'images/blank.png'
                 text: 'Calculer une concentration'
                 on_release: root.ask_evaluate_concentration()
         BoxLayout:
@@ -113,8 +114,11 @@ kv_str = """
                 width: self.height
                 on_release: app.sm.change_screen('left')
             Button:
+                id: report_button
+                disabled: True
                 background_normal: 'images/blank.png'
-                text: 'Exporter Doocument'
+                background_disabled_normal: 'images/blank.png'
+                text: 'Exporter Document'
                 on_release: root.export_report()
             ButtonIcon:
                 source: "images/next.png"
@@ -225,36 +229,47 @@ class AnalysisScreen(Screen):
 
     def update_graph(self):
         try:
+            graph: Graph = self.ids.data_plot
             if self.session.reference is not None and len(self.session.absorbance_data_points) > 0:
-                graph: Graph = self.ids.data_plot
-                Amax = 0
-                Cmax = 0
+                max_absorbance = 0
+                max_concentration = 0
                 data_points = self.session.absorbance_data_points
-                coordonates_list = []
+                coordinates_list = []
                 for i in range(len(data_points)):
-                    if data_points[i][1]is not None and data_points[i][1] > Amax:
-                        Amax = data_points[i][1]
-                    if data_points[i][0] > Cmax:
-                        Cmax = data_points[i][0]
-                    coordonates_list.append((data_points[i][0], data_points[i][1]))
-                self.data_plot.points = coordonates_list
-                graph.xmax = Cmax * 1.1
-                graph.ymax = Amax * 1.1
-                coefs, r2 = self.session.absorbance_data_line
+                    if data_points[i][1] is not None and data_points[i][1] > max_absorbance:
+                        max_absorbance = data_points[i][1]
+                    if data_points[i][0] > max_concentration:
+                        max_concentration = data_points[i][0]
+                    coordinates_list.append((data_points[i][0], data_points[i][1]))
+                self.data_plot.points = coordinates_list
+                graph.xmax = max_concentration * 1.1
+                graph.ymax = max_absorbance * 1.1
+                a, r2 = self.session.absorbance_data_line
                 self.ids.concentration_button.disabled = False
-                self.ids.equation.text = f'A = {coefs[1]:.3e} C'
+                self.ids.report_button.disabled = False
+                self.ids.equation.text = f'A = {a:.3e} C'
                 if r2 is not None:
                     self.ids.equation.text += f' (R²={r2:.4f})'
-                line_points = [(0, 0), (Cmax, Cmax*coefs[1])]
+                line_points = [(0, 0), (max_concentration, max_concentration*a)]
                 self.regression_plot.points = line_points
                 if self.data_plot not in graph.plots:
                     graph.add_plot(self.data_plot)
                 if self.regression_plot not in graph.plots:
                     graph.add_plot(self.regression_plot)
-        except ZeroDivisionError:
+            else:
+                if self.data_plot is not None:
+                    graph.remove_plot(self.data_plot)
+                if self.regression_plot is not None:
+                    graph.remove_plot(self.regression_plot)
+                self.ids.concentration_button.disabled = True
+                self.ids.report_button.disabled = True
+                self.ids.equation.text = ''
+        except (ZeroDivisionError, TypeError):
             self.ids.concentration_button.disabled = True
-        except TypeError:
-            self.ids.concentration_button.disabled = True
-
+            self.ids.report_button.disabled = True
+            self.ids.equation.text = ''
     def export_report(self):
         self.session.export_report(self.number)
+        popup = Factory.MessagePopup()
+        popup.message = 'le fichier est disponible dans votre dossier document.'
+        popup.open()

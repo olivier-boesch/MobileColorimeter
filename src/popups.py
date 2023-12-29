@@ -37,14 +37,14 @@ kv_str = """
                 id: greenlabel
                 backcolor: 0,1,0,1
                 color: 0,0,0,1
-                text: "G:" + str(preview.g)
+                text: "V:" + str(preview.g)
             ColorLabel:
                 id: bluelabel
                 backcolor: 0,0,1,1
                 color: 1,1,1,1
                 text: "B:" + str(preview.b)
             ColorLabel:
-                text: "Mean"
+                text: "Moyenne"
                 backcolor: preview.r/255, preview.g/255, preview.b/255, 1
                 color: 0,0,0,1
             Button:
@@ -66,8 +66,9 @@ kv_str = """
 <ConcentrationPopup>
     title: "Concentration (mol/L)"
     auto_dismiss: False
-    size_hint: 0.5, None
+    size_hint: None, None
     height: dp(200)
+    width: dp(400)
     BoxLayout:
         orientation: "vertical"
         Label:
@@ -104,8 +105,9 @@ kv_str = """
 <EvalConcentrationPopup>:
     title: 'Concentration calculée'
     auto_dismiss: False
-    size_hint: 0.5, None
+    size_hint: None, None
     height: dp(150)
+    width: dp(400)
     BoxLayout:
         orientation: "vertical"
         Label:

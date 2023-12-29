@@ -18,7 +18,7 @@ LINKS = {
     'kivy': "https://kivy.org/"
 }
 
-__version__ = "0.5"
+__version__ = "0.7"
 
 if platform not in ["android", "ios"]:
     Logger.info("Config: disabling multitouch on desktop")
@@ -32,8 +32,9 @@ kv = """
     message: ''
     ok_callbkack: None
     callback_data: None
-    size_hint: 0.5, None
+    size_hint: None, None
     height: dp(70) + box.minimum_height
+    width: dp(400)
     BoxLayout:
         size_hint_y: None
         height: self.minimum_height
@@ -55,6 +56,27 @@ kv = """
             Button:
                 text: 'Ok'
                 on_release: root.ok_callback(root.callback_data); root.dismiss()
+                
+<MessagePopup@Popup>:
+    title: 'Information'
+    message: ''
+    size_hint: None, None
+    height: dp(70) + box.minimum_height
+    width: dp(400)
+    BoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        id: box
+        orientation: 'vertical'
+        spacing: dp(10)
+        Label:
+            size_hint_y: None
+            height: self.texture_size[1]
+            id: label
+            text: root.message
+        Button:
+            text: 'Ok'
+            on_release: root.dismiss()
 
 <ButtonIcon>:
     state_image: self.background_normal if self.state == 'normal' else self.background_down
@@ -135,21 +157,14 @@ class MobileColorimeterApp(App):
     capture_popup = CapturePopup()
     concentration_popup = ConcentrationPopup()
     version = __version__
+    dont_gc = None
+    sm = None
 
     def build(self):
         self.sm = MyScreenManager()
         self.sm.add_widget(MainScreen(name='mainscreen'))
         self.sm.current = "mainscreen"
         return self.sm
-
-    def add_session(self):
-        self.sm.add_session()
-
-    def ask_delete_session(self, screen):
-        self.sm.ask_delete_session(screen)
-
-    def delete_session(self, session_name):
-        self.sm.delete_session(session_name)
 
     def on_start(self):
         self.dont_gc = AndroidPermissions(self.start_app)
