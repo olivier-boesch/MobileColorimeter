@@ -13,6 +13,7 @@ from kivy.metrics import dp
 from popups import EvalConcentrationPopup
 
 
+# UI elements
 kv_str = """
 #:import Graph kivy_garden.graph.Graph
 
@@ -131,15 +132,6 @@ kv_str = """
 Builder.load_string(kv_str)
 
 
-class ButtonIcon(ButtonBehavior, Image):
-    background_color = ColorProperty([1, 1, 1, 1])
-    background_normal = StringProperty('images/blank.png')
-    background_down = StringProperty('atlas://data/images/defaulttheme/button_pressed')
-    background_disabled_normal = StringProperty('atlas://data/images/defaulttheme/button_disabled')
-    background_disabled_down = StringProperty('atlas://data/images/defaulttheme/button_disabled_pressed')
-    border = ListProperty([16, 16, 16, 16])
-
-
 class DataGridItem(TouchRippleButtonBehavior, BoxLayout):
     sample = ObjectProperty(None)
     remove_sample = ObjectProperty(None)
@@ -230,7 +222,9 @@ class AnalysisScreen(Screen):
     def update_graph(self):
         try:
             graph: Graph = self.ids.data_plot
+            # if we can plot data
             if self.session.reference is not None and len(self.session.absorbance_data_points) > 0:
+                # prepare plot data (points)
                 max_absorbance = 0
                 max_concentration = 0
                 data_points = self.session.absorbance_data_points
@@ -242,34 +236,41 @@ class AnalysisScreen(Screen):
                         max_concentration = data_points[i][0]
                     coordinates_list.append((data_points[i][0], data_points[i][1]))
                 self.data_plot.points = coordinates_list
+                # max graphique = max val + 10%
                 graph.xmax = max_concentration * 1.1
                 graph.ymax = max_absorbance * 1.1
+                # plot data (line)
                 a, r2 = self.session.absorbance_data_line
-                self.ids.concentration_button.disabled = False
-                self.ids.report_button.disabled = False
+                line_points = [(0, 0), (max_concentration, max_concentration * a)]
+                self.regression_plot.points = line_points
+                # equation
                 self.ids.equation.text = f'A = {a:.3e} C'
                 if r2 is not None:
                     self.ids.equation.text += f' (R²={r2:.4f})'
-                line_points = [(0, 0), (max_concentration, max_concentration*a)]
-                self.regression_plot.points = line_points
+                # enable buttons
+                self.ids.concentration_button.disabled = False
+                self.ids.report_button.disabled = False
+                # add plots if not already in graph
                 if self.data_plot not in graph.plots:
                     graph.add_plot(self.data_plot)
                 if self.regression_plot not in graph.plots:
                     graph.add_plot(self.regression_plot)
+            # remove plots / disable buttons / remove equation if we can't plot
             else:
-                if self.data_plot is not None:
-                    graph.remove_plot(self.data_plot)
-                if self.regression_plot is not None:
-                    graph.remove_plot(self.regression_plot)
-                self.ids.concentration_button.disabled = True
-                self.ids.report_button.disabled = True
-                self.ids.equation.text = ''
+                raise TypeError  # to eliminate duplicate... same code as if there were errors
         except (ZeroDivisionError, TypeError):
+            # remove plots
+            if self.data_plot is not None:
+                graph.remove_plot(self.data_plot)
+            if self.regression_plot is not None:
+                graph.remove_plot(self.regression_plot)
+            # disable buttons
             self.ids.concentration_button.disabled = True
             self.ids.report_button.disabled = True
+            # clear equation
             self.ids.equation.text = ''
+    
     def export_report(self):
         self.session.export_report(self.number)
-        popup = Factory.MessagePopup()
-        popup.message = 'le fichier est disponible dans votre dossier document.'
+        popup = Factory.MessagePopup(message='le fichier est disponible dans votre dossier document.')
         popup.open()

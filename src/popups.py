@@ -1,4 +1,4 @@
-from kivy.properties import NumericProperty, ListProperty, ObjectProperty, BooleanProperty
+from kivy.properties import NumericProperty, ListProperty, ObjectProperty, BooleanProperty, StringProperty
 from kivy.graphics import Line, Color
 from kivy.metrics import dp
 from kivy.uix.popup import Popup
@@ -11,7 +11,43 @@ import re
 from PIL import Image
 
 kv_str = """
-
+<ConfirmPopup@Popup>:
+    title: 'Confirmer ?'
+    message: ''
+    ok_callbkack: None
+    callback_data: None
+    size_hint: None, None
+    height: dp(70) + box.minimum_height
+    width: dp(400)
+    BoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        id: box
+        orientation: 'vertical'
+        spacing: dp(10)
+        Label:
+            size_hint_y: None
+            height: self.texture_size[1]
+            id: label
+            text: root.message
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            orientation: 'horizontal'
+            Button:
+                text: 'Annuler'
+                on_release: root.dismiss()
+            Button:
+                text: 'Ok'
+                on_release: root.ok_callback(root.callback_data); root.dismiss()
+                
+<MessagePopup>:
+    title: 'Information'
+    size_hint: None, None
+    height: dp(150)
+    width: dp(450)
+    Label:
+        text: root.message
 
 <CapturePopup>:
     auto_dismiss: False
@@ -123,6 +159,10 @@ Builder.load_string(kv_str)
 
 
 class CustomPreview(Preview):
+    """
+    Custom preview
+    Class for data analysis of image colors
+    """
     r = NumericProperty(0)
     g = NumericProperty(0)
     b = NumericProperty(0)
@@ -133,6 +173,16 @@ class CustomPreview(Preview):
 
     def analyze_pixels_callback(self, pixels, image_size, image_pos,
                                 image_scale, mirror):
+        """
+        Custom callback for image analysis of a rectangle (analyse_w x analyse_h)
+        computes the mean color of this rectangle
+        :param pixels: image pixels in rgba format
+        :param image_size: tuple (width, height) of the image
+        :param image_pos: position of the image
+        :param image_scale: scale of the image
+        :param mirror: is the image mirrored ?
+        :return: None
+        """
         pil_image = Image.frombytes(mode='RGBA', size=image_size,
                                     data=pixels)
         w, h = image_size
@@ -152,6 +202,11 @@ class CustomPreview(Preview):
 
     @mainthread
     def set_rgb_values(self, mean_color):
+        """
+        sets the r,g and b values in the maint hread (where kivy's loop is running)
+        :param mean_color: tuple (r,g,b) of the mean color
+        :return: None
+        """
         self.r = int(mean_color[0])
         self.g = int(mean_color[1])
         self.b = int(mean_color[2])
@@ -165,6 +220,9 @@ class CustomPreview(Preview):
 
 
 class FloatInput(TextInput):
+    """
+    A float only input widget
+    """
     pat = re.compile('[^0-9]')
 
     def insert_text(self, substring, from_undo=False):
@@ -180,11 +238,17 @@ class FloatInput(TextInput):
 
 
 class EvalConcentrationPopup(Popup):
+    """
+    Displays the result of the evaluation for a concentration
+    """
     absorbance_value = NumericProperty(0.0)
     concentration_value = NumericProperty(0.0)
 
 
 class ConcentrationPopup(Popup):
+    """
+    asks for a concentration value
+    """
     callback_method = ObjectProperty(None)
 
     def on_open(self):
@@ -203,6 +267,9 @@ class ConcentrationPopup(Popup):
 
 
 class CapturePopup(Popup):
+    """
+    captures the image for analysing (the analysis is made in realtime)
+    """
     title = "Capture"
     sample = ListProperty([0, 0, 0])
     callback_method = ObjectProperty(None)
@@ -225,5 +292,18 @@ class CapturePopup(Popup):
         self.sample = val
         Logger.info(f"Sampled Color: {val}")
         if self.callback_method is not None:
-            Clock.schedule_once(lambda dt: self.callback_method(self.concentration, self.sample), 0.1)
+            self.callback_method(self.concentration, self.sample)
             self.dismiss()
+
+
+class MessagePopup(Popup):
+    """
+    Simple message popup which dismisses itself
+    """
+    message = StringProperty('')
+    auto_close = BooleanProperty(True)
+    auto_close_delay = NumericProperty(2)
+
+    def on_open(self):
+        if self.auto_close:
+            Clock.schedule_once(lambda dt: self.dismiss(), self.auto_close_delay)

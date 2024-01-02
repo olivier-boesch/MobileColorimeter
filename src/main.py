@@ -1,4 +1,5 @@
 from kivy.app import App
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager
 from android_permissions import AndroidPermissions
 from screens.mainscreen import MainScreen
@@ -7,7 +8,8 @@ from kivy.logger import Logger
 from kivy.utils import platform
 from kivy.uix.rst import RstDocument
 from popups import CapturePopup, ConcentrationPopup
-from kivy.properties import NumericProperty
+from kivy.properties import NumericProperty, ColorProperty, StringProperty, ListProperty
+from kivy.uix.image import Image
 from kivy.factory import Factory
 from kivy.lang import Builder
 import webbrowser
@@ -18,7 +20,7 @@ LINKS = {
     'kivy': "https://kivy.org/"
 }
 
-__version__ = "0.7"
+__version__ = "0.8"
 
 if platform not in ["android", "ios"]:
     Logger.info("Config: disabling multitouch on desktop")
@@ -27,59 +29,6 @@ if platform not in ["android", "ios"]:
 
 
 kv = """
-<ConfirmPopup@Popup>:
-    title: 'Confirmer ?'
-    message: ''
-    ok_callbkack: None
-    callback_data: None
-    size_hint: None, None
-    height: dp(70) + box.minimum_height
-    width: dp(400)
-    BoxLayout:
-        size_hint_y: None
-        height: self.minimum_height
-        id: box
-        orientation: 'vertical'
-        spacing: dp(10)
-        Label:
-            size_hint_y: None
-            height: self.texture_size[1]
-            id: label
-            text: root.message
-        BoxLayout:
-            size_hint_y: None
-            height: dp(50)
-            orientation: 'horizontal'
-            Button:
-                text: 'Annuler'
-                on_release: root.dismiss()
-            Button:
-                text: 'Ok'
-                on_release: root.ok_callback(root.callback_data); root.dismiss()
-                
-<MessagePopup@Popup>:
-    title: 'Information'
-    message: ''
-    size_hint: None, None
-    height: dp(70) + box.minimum_height
-    width: dp(450)
-    BoxLayout:
-        size_hint_y: None
-        height: self.minimum_height
-        id: box
-        orientation: 'vertical'
-        spacing: dp(10)
-        Label:
-            size_hint_y: None
-            height: self.texture_size[1]
-            id: label
-            text: root.message
-        Button:
-            size_hint_y: None
-            height: dp(50)
-            text: 'Ok'
-            on_release: root.dismiss()
-
 <ButtonIcon>:
     state_image: self.background_normal if self.state == 'normal' else self.background_down
     disabled_image: self.background_disabled_normal if self.state == 'normal' else self.background_disabled_down
@@ -94,6 +43,15 @@ kv = """
 """
 
 Builder.load_string(kv)
+
+
+class ButtonIcon(ButtonBehavior, Image):
+    background_color = ColorProperty([1, 1, 1, 1])
+    background_normal = StringProperty('images/blank.png')
+    background_down = StringProperty('atlas://data/images/defaulttheme/button_pressed')
+    background_disabled_normal = StringProperty('atlas://data/images/defaulttheme/button_disabled')
+    background_disabled_down = StringProperty('atlas://data/images/defaulttheme/button_disabled_pressed')
+    border = ListProperty([16, 16, 16, 16])
 
 
 class InfoRstDocument(RstDocument):

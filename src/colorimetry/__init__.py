@@ -9,6 +9,7 @@ from math import log10
 from numpy.polynomial import polynomial as poly
 import logging
 from os.path import join, expanduser
+from os import remove
 from kivy.base import platform
 
 log = logging.getLogger("Colorimetry")
@@ -202,7 +203,7 @@ class Session:
         from reportlab.lib import pagesizes, styles, units, utils
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
         import matplotlib
-        matplotlib.use('Agg')
+        matplotlib.use('agg')
         from matplotlib import pyplot as plt
         # storage dir
         if platform == 'android':
@@ -210,14 +211,20 @@ class Session:
             from androidstorage4kivy.sharedstorage import Environment
             ss = SharedStorage()
 
+            storage_dir = "."
+
             def store_file(filepath):
                 ss.copy_to_shared(filepath, Environment.DIRECTORY_DOCUMENTS)
+                remove(filepath)  # cleanup
 
         else:
             def store_file(filepath):
                 pass
+
+            storage_dir = join(expanduser("~"), "Documents")
+
         # document
-        path = f"report{number}.pdf"
+        path = join(storage_dir, f"report{number}.pdf")
         log.info(f"Pdf report: saving file to {path}")
         doc = SimpleDocTemplate(path, pagesize=pagesizes.A4)
         elements = []
@@ -248,13 +255,13 @@ class Session:
         # space
         elements.append(Spacer(height=1 * units.cm, width=pagesizes.A4[0]))
         # graph
-        plt.figure(0)
+        plt.figure(0, dpi=600)
         plt.scatter(plot_data_x, plot_data_y, s=20, color='black')
         plt.plot([0, self.max_concentration], [0, self.max_concentration * a], color='#212121', linestyle='--')
         plt.xlabel("Concentration (mol/L)")
         plt.ylabel("Absorbance")
         plt.grid(True)
-        plt.savefig("temp.png", dpi=300)
+        plt.savefig("temp.png", dpi=600)
         img = utils.ImageReader("temp.png")
         iw, ih = img.getSize()
         aspect = ih / iw
@@ -262,4 +269,8 @@ class Session:
         # build and save document
         doc.build(elements)
         log.info("Pdf report: file saved")
+        # store file (used for android)
         store_file(path)
+        # cleanup
+        remove('temp.png')
+
