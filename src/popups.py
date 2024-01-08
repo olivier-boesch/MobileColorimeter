@@ -16,9 +16,8 @@ kv_str: str = """
     message: ''
     ok_callbkack: None
     callback_data: None
-    size_hint: None, None
+    size_hint: 0.8, None
     height: dp(70) + box.minimum_height
-    width: dp(400)
     BoxLayout:
         size_hint_y: None
         height: self.minimum_height
@@ -43,7 +42,7 @@ kv_str: str = """
                 
 <MessagePopup>:
     title: 'Information'
-    size_hint: None, 0.8
+    size_hint: 0.8, None
     height: dp(150)
     Label:
         text: root.message
@@ -101,7 +100,7 @@ kv_str: str = """
 <ConcentrationPopup>
     title: "Concentration (mol/L)"
     auto_dismiss: False
-    size_hint: None, 0.8
+    size_hint: 0.8, None
     height: dp(200)
     BoxLayout:
         orientation: "vertical"
@@ -139,7 +138,7 @@ kv_str: str = """
 <EvalConcentrationPopup>:
     title: 'Concentration calculée'
     auto_dismiss: False
-    size_hint: None, 0.8
+    size_hint: 0.8, None
     height: dp(150)
     BoxLayout:
         orientation: "vertical"
