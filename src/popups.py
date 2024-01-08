@@ -10,7 +10,7 @@ from kivy.uix.textinput import TextInput
 import re
 from PIL import Image
 
-kv_str = """
+kv_str: str = """
 <ConfirmPopup@Popup>:
     title: 'Confirmer ?'
     message: ''
@@ -43,9 +43,8 @@ kv_str = """
                 
 <MessagePopup>:
     title: 'Information'
-    size_hint: None, None
+    size_hint: None, 0.8
     height: dp(150)
-    width: dp(450)
     Label:
         text: root.message
 
@@ -102,9 +101,8 @@ kv_str = """
 <ConcentrationPopup>
     title: "Concentration (mol/L)"
     auto_dismiss: False
-    size_hint: None, None
+    size_hint: None, 0.8
     height: dp(200)
-    width: dp(400)
     BoxLayout:
         orientation: "vertical"
         Label:
@@ -141,9 +139,8 @@ kv_str = """
 <EvalConcentrationPopup>:
     title: 'Concentration calculée'
     auto_dismiss: False
-    size_hint: None, None
+    size_hint: None, 0.8
     height: dp(150)
-    width: dp(400)
     BoxLayout:
         orientation: "vertical"
         Label:
@@ -171,8 +168,8 @@ class CustomPreview(Preview):
     sample = ListProperty([0, 0, 0])
     analyze_on = BooleanProperty(False)
 
-    def analyze_pixels_callback(self, pixels, image_size, image_pos,
-                                image_scale, mirror):
+    def analyze_pixels_callback(self, pixels: bytes, image_size: tuple[int, int], image_pos: tuple[int, int],
+                                image_scale: float, mirror: bool):
         """
         Custom callback for image analysis of a rectangle (analyse_w x analyse_h)
         computes the mean color of this rectangle
@@ -201,17 +198,16 @@ class CustomPreview(Preview):
         self.set_rgb_values((r/N, g/N, b/N))
 
     @mainthread
-    def set_rgb_values(self, mean_color):
+    def set_rgb_values(self, mean_color: tuple[int, int, int]):
         """
-        sets the r,g and b values in the maint hread (where kivy's loop is running)
+        sets the r,g and b values in the main thread (where kivy's loop is running)
         :param mean_color: tuple (r,g,b) of the mean color
-        :return: None
         """
         self.r = int(mean_color[0])
         self.g = int(mean_color[1])
         self.b = int(mean_color[2])
 
-    def canvas_instructions_callback(self, texture, tex_size, tex_pos):
+    def canvas_instructions_callback(self, texture: "Texture", tex_size: tuple[int, int], tex_pos: tuple[int, int]):
         x, y = tex_pos
         w, h = tex_size
         Color(1, 1, 1, 1)
@@ -225,7 +221,7 @@ class FloatInput(TextInput):
     """
     pat = re.compile('[^0-9]')
 
-    def insert_text(self, substring, from_undo=False):
+    def insert_text(self, substring: str, from_undo: bool = False):
         pat = self.pat
         if '.' in self.text:
             s = re.sub(pat, '', substring)
@@ -261,6 +257,9 @@ class ConcentrationPopup(Popup):
         self.dismiss()
 
     def on_ok(self):
+        """
+        Called when the ok button is pressed
+        """
         if self.callback_method is not None:
             self.callback_method(float(self.ids.concentration.text))
         self.dismiss()
@@ -279,16 +278,26 @@ class CapturePopup(Popup):
         super().__init__(**kwargs)
 
     def on_open(self):
+        """
+        Called when the popup is about to be opened
+        """
         self.ids['preview'].connect_camera(camera_id='back',
                                            enable_video=False,
                                            enable_analyze_pixels=True, mirror=False)
         self.ids.preview.analyze_on = True
 
     def on_dismiss(self):
+        """
+        Called when the popup is about to be closed
+        """
         self.ids.preview.analyze_on = False
         self.ids['preview'].disconnect_camera()
 
-    def sample_color(self, val: list):
+    def sample_color(self, val: tuple[int, int, int]):
+        """
+        Called when the sample button is pressed
+        :param val: sampled color (tuple of r,g, and b values)
+        """
         self.sample = val
         Logger.info(f"Sampled Color: {val}")
         if self.callback_method is not None:
@@ -305,5 +314,8 @@ class MessagePopup(Popup):
     auto_close_delay = NumericProperty(2)
 
     def on_open(self):
+        """
+        Called when the popup is about to be opened
+        """
         if self.auto_close:
             Clock.schedule_once(lambda dt: self.dismiss(), self.auto_close_delay)

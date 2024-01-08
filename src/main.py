@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.screenmanager import ScreenManager
+from kivy.uix.screenmanager import ScreenManager, Screen
 from android_permissions import AndroidPermissions
 from screens.mainscreen import MainScreen
 from screens.analysisscreen import AnalysisScreen
@@ -14,13 +14,16 @@ from kivy.factory import Factory
 from kivy.lang import Builder
 import webbrowser
 
-LINKS = {
+
+LINKS: dict[str, str] = {
     'github': "https://github.com/olivier-boesch/MobileColorimeter",
     'icone': "https://thenounproject.com/icon/spectrometer-5707903/",
     'kivy': "https://kivy.org/"
 }
 
-__version__ = "0.9"
+
+__version__: str = "0.9.2"
+
 
 if platform not in ["android", "ios"]:
     Logger.info("Config: disabling multitouch on desktop")
@@ -28,7 +31,7 @@ if platform not in ["android", "ios"]:
     Config.set('input', 'mouse', 'mouse,disable_multitouch')
 
 
-kv = """
+kv: str = """
 <ButtonIcon>:
     state_image: self.background_normal if self.state == 'normal' else self.background_down
     disabled_image: self.background_disabled_normal if self.state == 'normal' else self.background_disabled_down
@@ -41,6 +44,7 @@ kv = """
             size: self.size
             source: self.disabled_image if self.disabled else self.state_image
 """
+
 
 Builder.load_string(kv)
 
@@ -55,12 +59,26 @@ class ButtonIcon(ButtonBehavior, Image):
 
 
 class InfoRstDocument(RstDocument):
-
-    def on_source(self, instance, value):
+    """
+    Class to display custom RST doc on main screen
+    """
+    def on_source(self, instance: "InfoRstDocument", value: str) -> None:
+        """
+        Called when a file is loaded
+        replace the version in the content
+        :param instance: InfoRstDocument object (not used)
+        :param value: value of the source (not used)
+        :return:
+        """
         super().on_source(instance, value)
         self.text = self.text.replace('{version}', App.get_running_app().version)
 
-    def on_ref_press(self, node, ref):
+    def on_ref_press(self, node, ref: str) -> None:
+        """
+        Called when a link is oressed
+        :param node: which node is it (not used)
+        :param ref: what ref was pressed
+        """
         try:
             webbrowser.open(LINKS[ref])
         except KeyError:
@@ -68,9 +86,16 @@ class InfoRstDocument(RstDocument):
 
 
 class MyScreenManager(ScreenManager):
-    last_number_for_analysis = NumericProperty(0)
+    """
+    Screen manager of the app
+    """
+    last_number_for_analysis = NumericProperty(0)  # higher number for session number (always higher in a use)
 
-    def change_screen(self, direction):
+    def change_screen(self, direction: str) -> None:
+        """
+        Screen change with transition
+        :param direction: where to move the screen
+        """
         Logger.info(f"Ui: Moving \"{direction}\"")
         if direction == 'left':
             self.transition.direction = 'right'
@@ -81,7 +106,11 @@ class MyScreenManager(ScreenManager):
             cur = self.screen_names.index(self.current)
             self.current = self.screen_names[(cur + 1) % len(self.screen_names)]
 
-    def add_session(self):
+    def add_session(self) -> None:
+        """
+        Add a new session to the screen manager (a new screen analysis)
+        :return:
+        """
         session_screen_name = 'analysisscreen' + str(self.last_number_for_analysis)
         Logger.info(f"Session: Adding \"{session_screen_name}\"")
         self.add_widget(AnalysisScreen(name=session_screen_name, number=self.last_number_for_analysis))
@@ -90,19 +119,31 @@ class MyScreenManager(ScreenManager):
         Logger.info(f"Session: Updated screens list {self.screen_names!s}")
         self.last_number_for_analysis += 1
 
-    def ask_delete_session(self, screen):
+    def ask_delete_session(self, screen: str) -> None:
+        """
+        Ask the user to delete or not a session
+        :param screen: screen where the button was pressed
+        """
         popup = Factory.ConfirmPopup()
         popup.message = 'Voulez-vous effacer cette session ?'
         popup.ok_callback = self.delete_session
         popup.callback_data = screen
         popup.open()
 
-    def find_screen(self, screen_name):
+    def find_screen(self, screen_name: str) -> Screen:
+        """
+        Finds the screen by nale
+        :param screen_name: name of the screen
+        """
         for screen in self.screens:
             if screen.name == screen_name:
                 return screen
 
-    def delete_session(self, screen):
+    def delete_session(self, screen: Screen) -> None:
+        """
+        Effectively deletes the session
+        :param screen: screen object to delete
+        """
         Logger.info(f"Session: Deleting \"{screen.name}\"")
         cur = self.screen_names.index(screen.name)
         self.transition.direction = 'down'

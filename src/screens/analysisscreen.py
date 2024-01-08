@@ -15,7 +15,7 @@ from math import isclose
 
 
 # UI elements
-kv_str = """
+kv_str: str = """
 #:import Graph kivy_garden.graph.Graph
 
 <DataGridItem>:
@@ -146,7 +146,7 @@ class DataGridItem(TouchRippleButtonBehavior, BoxLayout):
     concentration = NumericProperty(0.0)
     ripple_duration_in = 0.2
 
-    def on_release(self):
+    def on_release(self) -> None:
         self.remove_sample(self.sample)
 
 
@@ -172,7 +172,7 @@ class AnalysisScreen(Screen):
         popup.callback_method = self.ask_sample
         popup.open()
 
-    def ask_sample(self, concentration):
+    def ask_sample(self, concentration: float):
         """
         Return method after asking for concentration asks for a data capture
         :param concentration: if None, action is cancelled
@@ -184,7 +184,7 @@ class AnalysisScreen(Screen):
             popup.callback_method = self.add_sample
             popup.open()
 
-    def add_sample(self, concentration, sample_value):
+    def add_sample(self, concentration: float, sample_value: tuple[int, int, int]):
         """
         Add sample to session data
         :param concentration: concentration of this sample
@@ -207,7 +207,7 @@ class AnalysisScreen(Screen):
         popup.callback_method = self.add_reference
         popup.open()
 
-    def add_reference(self, _, sample_value):
+    def add_reference(self, _, sample_value: tuple[int, int, int]):
         """
         return method to effectively add reference to session
         :param sample_value: tuple(r,g,b) to set as reference sample
@@ -219,7 +219,7 @@ class AnalysisScreen(Screen):
         self.update_data_grid()
         self.update_graph()
 
-    def ask_remove_sample(self, sample):
+    def ask_remove_sample(self, sample: Sample):
         """
         asks if the user wants to remove a specific sample
         :param sample: sample to remove
@@ -230,7 +230,7 @@ class AnalysisScreen(Screen):
         popup.callback_data = sample
         popup.open()
 
-    def remove_sample(self, sample):
+    def remove_sample(self, sample: Sample):
         """
         return mathod to remove a specific sample after confirmation
         :param sample: sample to be removed
@@ -249,7 +249,7 @@ class AnalysisScreen(Screen):
         popup.callback_method = self.evaluate_concentration
         popup.open()
 
-    def evaluate_concentration(self, _, value):
+    def evaluate_concentration(self, _, value: tuple[int, int, int]):
         """
         evaluate a concentration effectively for a given sample and displays the result
         :param value: tuple(r,g,b) of the sample

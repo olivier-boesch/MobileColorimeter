@@ -28,11 +28,11 @@ class Sample:
         concentration : concentration of sample in mol/L
         reference: other Sample object used as background (or None if not provided)
         """
-        self.red_value = red_value
-        self.green_value = green_value
-        self.blue_value = blue_value
-        self.concentration = concentration
-        self.reference = reference
+        self.red_value: int = red_value
+        self.green_value: int = green_value
+        self.blue_value: int = blue_value
+        self.concentration: float = concentration
+        self.reference: [Sample, None] = reference
         log.debug(f"Sample added -> {self}")
 
     def __str__(self):
@@ -58,20 +58,18 @@ class Sample:
         return intensity
 
     @property
-    def transmittance(self) -> float:
+    def transmittance(self) -> [float, None]:
         """
         computes and returns the transmittance for this sample (value from 0.0 to 1.0)
         """
         if self.reference is None:
             return None
-        sample_intensity = self.intensity
-        reference_intensity = self.reference.intensity
-        transmittance_value = sample_intensity / reference_intensity
+        transmittance_value = self.intensity / self.reference.intensity
         log.debug(f"computed Transmittance: {transmittance_value * 100:.2f}%")
         return transmittance_value
 
     @property
-    def absorbance(self) -> float:
+    def absorbance(self) -> [float, None]:
         """
         computes and returns abdorbance for this sample in arbritrary units (A.U.)
         """
@@ -109,9 +107,9 @@ class Session:
         return output
 
     @property
-    def reference(self) -> Sample:
+    def reference(self) -> [Sample, None]:
         """
-        returns the reference (background) Sample object
+        returns the reference (background) Sample object or None if not set
         """
         return self._reference
 

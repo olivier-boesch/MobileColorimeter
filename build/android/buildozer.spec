@@ -32,7 +32,7 @@ source.exclude_dirs = ../../build
 # version = 0.1
 
 # (str) Application versioning (method 2)
-version.regex = __version__ = ['"](.*)['"]
+version.regex = __version__: str = ['"](.*)['"]
 version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
