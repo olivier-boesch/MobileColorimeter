@@ -11,6 +11,7 @@ from kivy.factory import Factory
 from kivy_garden.graph import Graph, LinePlot, PointPlot
 from kivy.metrics import dp
 from popups import EvalConcentrationPopup
+from math import isclose
 
 
 # UI elements
@@ -23,6 +24,17 @@ kv_str = """
         text: f"{root.concentration:.2e}"
     Label:
         text: f"{root.absorbance:.3f}" if root.absorbance is not None else "--"
+        
+        
+<DataGrid@RecycleView>:
+    viewclass: 'DataGridItem'
+    RecycleBoxLayout:
+        default_size: None, dp(56)
+        # defines the size of the widget in reference to width and height
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical' # defines the orientation of data item
 
 
 <AnalysisScreen>:
@@ -67,14 +79,6 @@ kv_str = """
                     text: 'Absorbance (U.A.)'
             DataGrid:
                 id: data_grid
-                viewclass: 'DataGridItem'
-                RecycleBoxLayout:
-                    default_size: None, dp(56)
-                    # defines the size of the widget in reference to width and height
-                    default_size_hint: 1, None
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: 'vertical' # defines the orientation of data item
         Graph:
             id: data_plot
             xlabel: 'concentration (mol/L)'
@@ -133,6 +137,9 @@ Builder.load_string(kv_str)
 
 
 class DataGridItem(TouchRippleButtonBehavior, BoxLayout):
+    """
+    Item class for recycle view
+    """
     sample = ObjectProperty(None)
     remove_sample = ObjectProperty(None)
     absorbance = NumericProperty(0.0, allownone=True)
@@ -143,25 +150,34 @@ class DataGridItem(TouchRippleButtonBehavior, BoxLayout):
         self.remove_sample(self.sample)
 
 
-class DataGrid(RecycleView):
-    pass
-
-
 class AnalysisScreen(Screen):
+    """
+    Analysis screen for display sessions's data as table and graph
+    number: id of this session
+    """
     number = NumericProperty(0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.session = Session()
-        self.data_plot = PointPlot(point_size=dp(5), color=(0, 0, 1, 1))
-        self.regression_plot = LinePlot(color=(0, 1, 1, 1), line_width=dp(2))
+        self.session = Session()  # class to handle data and perform all operations
+        self.data_plot = PointPlot(point_size=dp(5), color=(0, 0, 1, 1))  # plot for measures
+        self.regression_plot = LinePlot(color=(0, 1, 1, 1), line_width=dp(2))  # plot for regression line
 
     def ask_concentration(self):
+        """
+        Ask user for concentration
+        open a popup
+        """
         popup = App.get_running_app().concentration_popup
         popup.callback_method = self.ask_sample
         popup.open()
 
     def ask_sample(self, concentration):
+        """
+        Return method after asking for concentration asks for a data capture
+        :param concentration: if None, action is cancelled
+        :return:
+        """
         if concentration is not None:
             popup = App.get_running_app().capture_popup
             popup.concentration = concentration
@@ -169,20 +185,33 @@ class AnalysisScreen(Screen):
             popup.open()
 
     def add_sample(self, concentration, sample_value):
+        """
+        Add sample to session data
+        :param concentration: concentration of this sample
+        :param sample_value: tuple (r,g,b) of this sample
+        :return:
+        """
         sample = Sample(red_value=sample_value[0], green_value=sample_value[1], blue_value=sample_value[2],
                         concentration=concentration)
-        # Clock.schedule_once(lambda dt: ConcentrationPopup().open(), 0.2)
         self.session.add_sample(sample)
         self.update_data_grid()
         self.update_graph()
 
     def ask_reference(self):
+        """
+        Ask user for reference sample
+        opens of popup
+        """
         popup = App.get_running_app().capture_popup
         popup.concentration = None
         popup.callback_method = self.add_reference
         popup.open()
 
     def add_reference(self, _, sample_value):
+        """
+        return method to effectively add reference to session
+        :param sample_value: tuple(r,g,b) to set as reference sample
+        """
         reference = Sample(red_value=sample_value[0], green_value=sample_value[1], blue_value=sample_value[2])
         # Clock.schedule_once(lambda dt: ConcentrationPopup().open(), 0.2)
         self.ids.baseline_button.color = [0, 1, 0, 1]
@@ -191,6 +220,10 @@ class AnalysisScreen(Screen):
         self.update_graph()
 
     def ask_remove_sample(self, sample):
+        """
+        asks if the user wants to remove a specific sample
+        :param sample: sample to remove
+        """
         popup = Factory.ConfirmPopup()
         popup.message = 'Voulez-vous effacer cet échantillon ?'
         popup.ok_callback = self.remove_sample
@@ -198,17 +231,29 @@ class AnalysisScreen(Screen):
         popup.open()
 
     def remove_sample(self, sample):
+        """
+        return mathod to remove a specific sample after confirmation
+        :param sample: sample to be removed
+        """
         self.session.remove_sample(sample)
         self.update_data_grid()
         self.update_graph()
 
     def ask_evaluate_concentration(self):
+        """
+        asks the user to perform a capture to evaluate a concentration
+        open a capture popup
+        """
         popup = App.get_running_app().capture_popup
         popup.concentration = None
         popup.callback_method = self.evaluate_concentration
         popup.open()
 
     def evaluate_concentration(self, _, value):
+        """
+        evaluate a concentration effectively for a given sample and displays the result
+        :param value: tuple(r,g,b) of the sample
+        """
         sample = Sample(red_value=value[0], green_value=value[1], blue_value=value[2])
         concentration = self.session.compute_concentration_from_sample(sample)
         popup = EvalConcentrationPopup()
@@ -217,9 +262,15 @@ class AnalysisScreen(Screen):
         popup.open()
 
     def update_data_grid(self):
+        """
+        updates the data grid after changes
+        """
         self.ids.data_grid.data = [{'concentration': item[0], 'absorbance': item[1], 'sample': item[2], 'remove_sample': self.ask_remove_sample} for item in self.session.absorbance_data_points]
 
     def update_graph(self):
+        """
+        updates the graphs after changes
+        """
         try:
             graph: Graph = self.ids.data_plot
             # if we can plot data
@@ -237,8 +288,14 @@ class AnalysisScreen(Screen):
                     coordinates_list.append((data_points[i][0], data_points[i][1]))
                 self.data_plot.points = coordinates_list
                 # max graphique = max val + 10%
-                graph.xmax = max_concentration * 1.1
-                graph.ymax = max_absorbance * 1.1
+                if isclose(max_concentration, 0.0):
+                    graph.xmax = 0.001
+                else:
+                    graph.xmax = max_concentration * 1.1
+                if isclose(max_absorbance, 0.0):
+                    graph.ymax = 0.1
+                else:
+                    graph.ymax = max_absorbance * 1.1
                 # plot data (line)
                 a, r2 = self.session.absorbance_data_line
                 line_points = [(0, 0), (max_concentration, max_concentration * a)]
@@ -271,6 +328,9 @@ class AnalysisScreen(Screen):
             self.ids.equation.text = ''
     
     def export_report(self):
+        """
+        Exports the session data and graph to a pdf document
+        """
         self.session.export_report(self.number)
         popup = Factory.MessagePopup(message='le fichier est disponible dans votre dossier document.')
         popup.open()
