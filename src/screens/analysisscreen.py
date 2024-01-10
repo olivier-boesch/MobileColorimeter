@@ -1,12 +1,14 @@
+"""
+Analysis Screen
+
+"""
 from kivy.uix.screenmanager import Screen
 from colorimetry import Session, Sample
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.recycleview import RecycleView
-from kivy.properties import NumericProperty, ColorProperty, StringProperty, ListProperty, ObjectProperty
+from kivy.properties import NumericProperty, ObjectProperty
 from kivy.app import App
 from kivy.base import Builder
-from kivy.uix.image import Image
-from kivy.uix.behaviors import ButtonBehavior, TouchRippleButtonBehavior
+from kivy.uix.behaviors import TouchRippleButtonBehavior
 from kivy.factory import Factory
 from kivy_garden.graph import Graph, LinePlot, PointPlot
 from kivy.metrics import dp

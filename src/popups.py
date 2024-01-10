@@ -1,3 +1,6 @@
+"""
+Custom popup for the project
+"""
 from kivy.properties import NumericProperty, ListProperty, ObjectProperty, BooleanProperty, StringProperty
 from kivy.graphics import Line, Color
 from kivy.metrics import dp
@@ -105,7 +108,7 @@ kv_str: str = """
     BoxLayout:
         orientation: "vertical"
         Label:
-            text: "Entrez la concentration en mol/L de l'échantillon"
+            text: "Concentration (mol/L)"
         BoxLayout:
             padding: dp(10)
             spacing: dp(5)

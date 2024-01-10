@@ -1,19 +1,23 @@
+"""
+Main application file
+=====================
+Colorimeter App
+"""
+import webbrowser
 from kivy.app import App
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager, Screen
-from android_permissions import AndroidPermissions
-from screens.mainscreen import MainScreen
-from screens.analysisscreen import AnalysisScreen
 from kivy.logger import Logger
 from kivy.utils import platform
 from kivy.uix.rst import RstDocument
-from popups import CapturePopup, ConcentrationPopup
 from kivy.properties import NumericProperty, ColorProperty, StringProperty, ListProperty
 from kivy.uix.image import Image
 from kivy.factory import Factory
 from kivy.lang import Builder
-import webbrowser
-
+from android_permissions import AndroidPermissions
+from screens.mainscreen import MainScreen
+from screens.analysisscreen import AnalysisScreen
+from popups import CapturePopup, ConcentrationPopup
 
 LINKS: dict[str, str] = {
     'github': "https://github.com/olivier-boesch/MobileColorimeter",
@@ -22,14 +26,13 @@ LINKS: dict[str, str] = {
 }
 
 
-__version__: str = "0.9.2"
+__version__: str = "0.9.3"
 
 
 if platform not in ["android", "ios"]:
-    Logger.info("Config: disabling multitouch on desktop")
+    Logger.info("Config: disabling multi touch on desktop")
     from kivy.config import Config
     Config.set('input', 'mouse', 'mouse,disable_multitouch')
-
 
 kv: str = """
 <ButtonIcon>:
@@ -45,16 +48,22 @@ kv: str = """
             source: self.disabled_image if self.disabled else self.state_image
 """
 
-
 Builder.load_string(kv)
 
 
 class ButtonIcon(ButtonBehavior, Image):
+    """
+    Button with image
+    """
     background_color = ColorProperty([1, 1, 1, 1])
     background_normal = StringProperty('images/blank.png')
-    background_down = StringProperty('atlas://data/images/defaulttheme/button_pressed')
+    background_down = StringProperty(
+        'atlas://data/images/defaulttheme/button_pressed'
+    )
     background_disabled_normal = StringProperty('atlas://data/images/defaulttheme/button_disabled')
-    background_disabled_down = StringProperty('atlas://data/images/defaulttheme/button_disabled_pressed')
+    background_disabled_down = StringProperty(
+        'atlas://data/images/defaulttheme/button_disabled_pressed'
+    )
     border = ListProperty([16, 16, 16, 16])
 
 
@@ -62,6 +71,7 @@ class InfoRstDocument(RstDocument):
     """
     Class to display custom RST doc on main screen
     """
+
     def on_source(self, instance: "InfoRstDocument", value: str) -> None:
         """
         Called when a file is loaded
@@ -75,7 +85,7 @@ class InfoRstDocument(RstDocument):
 
     def on_ref_press(self, node, ref: str) -> None:
         """
-        Called when a link is oressed
+        Called when a link is pressed
         :param node: which node is it (not used)
         :param ref: what ref was pressed
         """
@@ -89,7 +99,8 @@ class MyScreenManager(ScreenManager):
     """
     Screen manager of the app
     """
-    last_number_for_analysis = NumericProperty(0)  # higher number for session number (always higher in a use)
+    # higher number for session number (always higher in a use)
+    last_number_for_analysis = NumericProperty(0)
 
     def change_screen(self, direction: str) -> None:
         """
@@ -111,9 +122,10 @@ class MyScreenManager(ScreenManager):
         Add a new session to the screen manager (a new screen analysis)
         :return:
         """
-        session_screen_name = 'analysisscreen' + str(self.last_number_for_analysis)
+        session_screen_name = 'analysis_screen' + str(self.last_number_for_analysis)
         Logger.info(f"Session: Adding \"{session_screen_name}\"")
-        self.add_widget(AnalysisScreen(name=session_screen_name, number=self.last_number_for_analysis))
+        self.add_widget(AnalysisScreen(name=session_screen_name,
+                                       number=self.last_number_for_analysis))
         self.transition.direction = 'up'
         self.current = session_screen_name
         Logger.info(f"Session: Updated screens list {self.screen_names!s}")
@@ -132,12 +144,13 @@ class MyScreenManager(ScreenManager):
 
     def find_screen(self, screen_name: str) -> Screen:
         """
-        Finds the screen by nale
+        Finds the screen
         :param screen_name: name of the screen
         """
         for screen in self.screens:
             if screen.name == screen_name:
                 return screen
+        return None
 
     def delete_session(self, screen: Screen) -> None:
         """
@@ -153,7 +166,10 @@ class MyScreenManager(ScreenManager):
 
 
 class MobileColorimeterApp(App):
-    title = "Mobile Colorimter"
+    """
+    Mobile colorimeter main class
+    """
+    title = "Mobile Colorimeter"
     icon = "images/logo.png"
     capture_popup = CapturePopup()
     concentration_popup = ConcentrationPopup()
@@ -163,14 +179,17 @@ class MobileColorimeterApp(App):
 
     def build(self):
         self.sm = MyScreenManager()
-        self.sm.add_widget(MainScreen(name='mainscreen'))
-        self.sm.current = "mainscreen"
+        self.sm.add_widget(MainScreen(name='main_screen'))
+        self.sm.current = "main_screen"
         return self.sm
 
     def on_start(self):
         self.dont_gc = AndroidPermissions(self.start_app)
 
     def start_app(self):
+        """
+        called when the app starts
+        """
         self.dont_gc = None
 
 
