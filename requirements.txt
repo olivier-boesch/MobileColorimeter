@@ -1,0 +1,11 @@
+# buildozer
+setuptools
+buildozer
+cython
+# app
+kivy
+gestures4kivy
+pillow
+numpy
+matplotlib
+kivy-garden.graph
