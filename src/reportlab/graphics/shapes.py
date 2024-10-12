@@ -343,7 +343,11 @@ class Group(Shape):
         """
         # propagates properties down
         if node is not None:
-            assert isValidChild(node), "Can only add Shape or UserNode objects to a Group"
+            try:
+                assert isValidChild(node), "Can only add Shape or UserNode objects to a Group"
+            except:
+                breakpoint()
+                raise
             self.contents.append(node)
             self._addNamedNode(name,node)
 
@@ -558,12 +562,8 @@ def _renderGroupPy(G,pfx,I,i=0,indent='\t\t'):
 
 def _extraKW(self,pfx,**kw):
     kw.update(self.__dict__)
-    R = {}
     n = len(pfx)
-    for k in kw.keys():
-        if k.startswith(pfx):
-            R[k[n:]] = kw[k]
-    return R
+    return {k[n:]:v for k,v in kw.items() if k.startswith(pfx)}
 
 class Drawing(Group, Flowable):
     """Outermost container; the thing a renderer works on.
@@ -801,7 +801,8 @@ class Drawing(Group, Flowable):
         #verbose = verbose is not None and (verbose,) or (getattr(self,'verbose',verbose),)[0]
         if format == 'pdf':
             from reportlab.graphics import renderPDF
-            return renderPDF.drawToString(self)
+            title = kw.pop('title','')
+            return renderPDF.drawToString(self, title, showBoundary=getattr(self,'showBorder',rl_config.showBoundary),**_extraKW(self,'_renderPDF_',**kw))
         elif format in self._bmModes:
             from reportlab.graphics import renderPM
             return renderPM.drawToString(self, fmt=format,showBoundary=getattr(self,'showBorder',
