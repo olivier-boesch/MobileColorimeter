@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = Mobile Colorimter
+title = Mobile Colorimeter
 
 # (str) Package name
 package.name = mobilecolorimeter
@@ -16,28 +16,28 @@ source.dir = ../../src
 source.include_exts = py,png,jpg,kv,atlas,rst,ini
 
 # (list) List of inclusions using pattern matching
-#source.include_patterns = assets/*,images/*,docs/*
+#source.include_patterns = assets/*,images/*.png
 
 # (list) Source files to exclude (let empty to not exclude anything)
-#source.exclude_exts = spec
+source.exclude_exts = svg
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-source.exclude_dirs = ../../build
+#source.exclude_dirs = tests, bin, venv
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-# version = 0.1
+#version = 0.1
 
 # (str) Application versioning (method 2)
-version.regex = __version__: str = ['"](.*)['"]
+version.regex = __version__ = ['"](.*)['"]
 version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.2.1,docutils,kivy_garden.graph,gestures4kivy,pillow,numpy,matplotlib
+requirements = python3,kivy,numpy,docutils,kivy_garden.graph,gestures4kivy,pillow,matplotlib,camera4kivy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -104,7 +104,7 @@ android.permissions = android.permission.INTERNET, (name=android.permission.WRIT
 android.api = 35
 
 # (int) Minimum API your APK / AAB will support.
-android.minapi = 28
+#android.minapi = 21
 
 # (int) Android SDK version to use
 #android.sdk = 20
@@ -136,7 +136,7 @@ android.minapi = 28
 # agreements. This is intended for automation only. If set to False,
 # the default, you will be shown the license when first running
 # buildozer.
-# android.accept_sdk_license = False
+android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
@@ -195,7 +195,7 @@ android.minapi = 28
 # android.add_resources = my_icons/all-inclusive.png:drawable/all_inclusive.png
 # 2) A directory, here  'legal_icons' must contain resources of one kind
 # android.add_resources = legal_icons:drawable
-# 3) A directory, here 'legal_resources' must contain one or more directories,
+# 3) A directory, here 'legal_resources' must contain one or more directories, 
 # each of a resource kind:  drawable, xml, etc...
 # android.add_resources = legal_resources
 #android.add_resources =
@@ -214,14 +214,14 @@ android.minapi = 28
 # android.add_compile_options = "sourceCompatibility = 1.8", "targetCompatibility = 1.8"
 
 # (list) Gradle repositories to add {can be necessary for some android.gradle_dependencies}
-# please enclose in double quotes
+# please enclose in double quotes 
 # e.g. android.gradle_repositories = "maven { url 'https://kotlin.bintray.com/ktor' }"
 #android.add_gradle_repositories =
 
-# (list) packaging options to add
+# (list) packaging options to add 
 # see https://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.PackagingOptions.html
 # can be necessary to solve conflicts in gradle_dependencies
-# please enclose in double quotes
+# please enclose in double quotes 
 # e.g. android.add_packaging_options = "exclude 'META-INF/common.kotlin_module'", "exclude 'META-INF/*.kotlin_module'"
 #android.add_packaging_options =
 
@@ -308,7 +308,7 @@ android.allow_backup = True
 # android.release_artifact = aab
 
 # (str) The format used to package the app for debug mode (apk or aar).
-# android.debug_artifact = aab
+# android.debug_artifact = apk
 
 #
 # Python for android (p4a) specific
@@ -321,7 +321,7 @@ android.allow_backup = True
 #p4a.fork = kivy
 
 # (str) python-for-android branch to use, defaults to master
-p4a.branch = develop
+#p4a.branch = master
 
 # (str) python-for-android specific commit to use, defaults to HEAD, must be within p4a.branch
 #p4a.commit = HEAD
@@ -411,7 +411,7 @@ warn_on_root = 1
 # build_dir = ./.buildozer
 
 # (str) Path to build output (i.e. .apk, .aab, .ipa) storage
-bin_dir = ./bin
+# bin_dir = ./bin
 
 #    -----------------------------------------------------------------------------
 #    List as sections
