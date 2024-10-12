@@ -9,3 +9,5 @@ pillow
 numpy
 matplotlib
 kivy-garden.graph
+kiwisolver
+opencv-python
