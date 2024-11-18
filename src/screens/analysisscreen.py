@@ -44,6 +44,10 @@ kv_str: str = """
         padding: dp(10)
         spacing: dp(5)
         orientation: "vertical"
+        # upper space
+        Label:
+            size_hint_y: None
+            height: dp(200)
         # upper bar
         BoxLayout:
             orientation: "horizontal"
@@ -105,11 +109,12 @@ kv_str: str = """
                 Label:
                     id: equation
             Button:
+                size_hint_x: 0.4
                 id: concentration_button
                 disabled: True
                 background_normal: 'images/blank.png'
                 background_disabled_normal: 'images/blank.png'
-                text: 'Calculer une concentration'
+                text: 'Calcul C'
                 on_release: root.ask_evaluate_concentration()
         BoxLayout:
             orientation: "horizontal"
@@ -299,11 +304,11 @@ class AnalysisScreen(Screen):
                 else:
                     graph.ymax = max_absorbance * 1.1
                 # plot data (line)
-                a, r2 = self.session.absorbance_data_line
-                line_points = [(0, 0), (max_concentration, max_concentration * a)]
+                b, a, r2 = self.session.absorbance_data_line
+                line_points = [(0, b), (max_concentration, max_concentration * a + b)]
                 self.regression_plot.points = line_points
                 # equation
-                self.ids.equation.text = f'A = {a:.3e} C'
+                self.ids.equation.text = f'A = {a:.3e} C + {b:.3e}'
                 if r2 is not None:
                     self.ids.equation.text += f' (R²={r2:.4f})'
                 # enable buttons

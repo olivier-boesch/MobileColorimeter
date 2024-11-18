@@ -163,7 +163,7 @@ class Session:
         return [(s.concentration, s.absorbance, s) for s in self.samples]
 
     @property
-    def absorbance_data_line(self) -> tuple[float, float]:
+    def absorbance_data_line(self) -> tuple[float, float, float]:
         """
         computes the regression line A = a * C for plotting purpose
         C is the concentration in mol/L
@@ -173,12 +173,13 @@ class Session:
         """
         coefs, stats = poly.polyfit(x=[s.concentration for s in self.samples],
                                     y=[s.absorbance for s in self.samples],
-                                    deg=[1], full=True)
+                                    deg=[1,0], full=True)
         try:
             r2 = 1-stats[0][0]
         except IndexError:
             r2 = None
-        return coefs[1], r2
+        log.warning(f"coefs: {coefs}")
+        return coefs[0], coefs[1], r2
 
     def compute_concentration_from_sample(self, sample: Sample) -> float:
         """
@@ -244,8 +245,8 @@ class Session:
         # space
         elements.append(Spacer(height=1 * units.cm, width=pagesizes.A4[0]))
         # equation
-        a, r2 = self.absorbance_data_line
-        text = f"Equation : A = {a:.3e} C"
+        b, a, r2 = self.absorbance_data_line
+        text = f"Equation : A = {a:.3e} C + {b:.3e}"
         if r2 is not None:
             text += f", R² = {r2:.5f}"
         p = Paragraph(text=text, style=styles.ParagraphStyle(name="body", font="Arial", fontSize=12, align="center", bold=True))
@@ -255,7 +256,7 @@ class Session:
         # graph
         plt.figure(0, dpi=600)
         plt.scatter(plot_data_x, plot_data_y, s=20, color='black')
-        plt.plot([0, self.max_concentration], [0, self.max_concentration * a], color='#212121', linestyle='--')
+        plt.plot([0, self.max_concentration], [b, self.max_concentration * a + b], color='#212121', linestyle='--')
         plt.xlabel("Concentration (mol/L)")
         plt.ylabel("Absorbance")
         plt.grid(True)
