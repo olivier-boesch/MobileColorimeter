@@ -1,3 +1,3 @@
 Mobile Colorimeter
 
-Work in preogress
+Work in progress
