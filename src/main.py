@@ -26,7 +26,7 @@ LINKS: dict[str, str] = {
 }
 
 
-__version__ = "0.9.3"
+__version__ = "0.9.5"
 
 
 if platform not in ["android", "ios"]:
