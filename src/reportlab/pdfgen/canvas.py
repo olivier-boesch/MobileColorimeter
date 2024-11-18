@@ -19,12 +19,10 @@ from math import sin, cos, tan, pi
 from reportlab import rl_config
 from reportlab.pdfbase import pdfdoc
 from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import ShapedStr, shapeFragWord
 from reportlab.pdfgen  import pathobject
 from reportlab.pdfgen.textobject import PDFTextObject, _PDFColorSetter
 from reportlab.lib.colors import black, _chooseEnforceColorSpace, Color, CMYKColor, toColor
 from reportlab.lib.utils import ImageReader, isSeq, isStr, isUnicode, _digester, asUnicode
-from reportlab.lib.abag import ABag
 from reportlab.lib.rl_accel import fp_str, escapePDF
 from reportlab.lib.boxstuff import aspectRatioFix
 
@@ -1609,19 +1607,9 @@ class Canvas(_PDFColorSetter):
         # use PDFTextObject for multi-line text.
         ##################################################
 
-    def shapedText(self,text):
-        if not isinstance(text,ShapedStr):
-            text = asUnicode(text)
-            font = pdfmetrics.getFont(self._fontname)
-            if font.isShaped:
-                text = shapeFragWord([0,(ABag(fontName=self._fontname,fontSize=self._fontsize),text)])[1][1]
-        width = (sum((_.x_advance for _ in text.__shapeData__))*self._fontsize/1000 if isinstance(text,ShapedStr)
-                    else self.stringWidth(text, self._fontname, self._fontsize))
-        return text, width
-
     def drawString(self, x, y, text, mode=None, charSpace=0, direction=None, wordSpace=None):
         """Draws a string in the current text styles."""
-        text, width = self.shapedText(text)
+        text = asUnicode(text)
         #we could inline this for speed if needed
         t = self.beginText(x, y, direction=direction)
         if mode is not None: t.setTextRenderMode(mode)
@@ -1635,7 +1623,9 @@ class Canvas(_PDFColorSetter):
 
     def drawRightString(self, x, y, text, mode=None, charSpace=0, direction=None, wordSpace=None):
         """Draws a string right-aligned with the x coordinate"""
-        text, width = self.shapedText(text)
+        if not isinstance(text, str):
+            text = text.decode('utf-8')
+        width = self.stringWidth(text, self._fontname, self._fontsize)
         if charSpace: width += (len(text)-1)*charSpace
         if wordSpace: width += (text.count(u' ')+text.count(u'\xa0')-1)*wordSpace
         t = self.beginText(x - width, y, direction=direction)
@@ -1652,7 +1642,9 @@ class Canvas(_PDFColorSetter):
         """Draws a string centred on the x coordinate. 
         
         We're British, dammit, and proud of our spelling!"""
-        text, width = self.shapedText(text)
+        if not isinstance(text, str):
+            text = text.decode('utf-8')
+        width = self.stringWidth(text, self._fontname, self._fontsize)
         if charSpace: width += (len(text)-1)*charSpace
         if wordSpace: width += (text.count(u' ')+text.count(u'\xa0')-1)*wordSpace
         t = self.beginText(x - 0.5*width, y, direction=direction)
