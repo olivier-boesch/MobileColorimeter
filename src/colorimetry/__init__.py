@@ -188,8 +188,8 @@ class Session:
         sample.reference = self.reference
         coeffs = poly.polyfit(y=[s.concentration for s in self.samples],
                               x=[s.absorbance for s in self.samples],
-                              deg=[1])
-        concentration = float(coeffs[1] * sample.absorbance)
+                              deg=[0,1])
+        concentration = float(coeffs[1] * sample.absorbance + coefs[0])
         log.debug(f"computed concentration: {concentration}")
         return concentration
 
