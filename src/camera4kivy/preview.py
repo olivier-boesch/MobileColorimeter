@@ -189,16 +189,13 @@ class Preview(AnchorLayout):
             self._image_available.set()
 
     def image_scheduler(self):
-        while True:
-            self._image_available.wait(0.5)
-            if not self.camera_connected:
-                break
+        while self.camera_connected:
             # Must pass pixels not Texture, becuase we are in a different
             # Thread
             if self._image_available.is_set():
+                self._image_available.clear()
                 self.analyze_pixels_callback(self.pixels, self.im_size, self.tpos,
                                              self.scale, self.mirror)
-                self._image_available.clear()
                 self._busy = False
 
     def possible_canvas_callback(self, texture, tex_size, tex_pos):
