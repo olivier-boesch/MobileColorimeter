@@ -178,7 +178,7 @@ class Session:
             r2 = 1-stats[0][0]
         except IndexError:
             r2 = None
-        log.warning(f"coefs: {coefs}")
+        log.info(f"data line regression: A={coefs[1]} * C + {coefs[0]}")
         return coefs[0], coefs[1], r2
 
     def compute_concentration_from_sample(self, sample: Sample) -> float:
