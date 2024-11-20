@@ -175,7 +175,11 @@ class Session:
                                     y=[s.absorbance for s in self.samples],
                                     deg=[1,0], full=True)
         try:
-            r2 = 1-stats[0][0]
+            ssres = stats[0][0]
+            mean_y = sum([s.absorbance for s in self.samples]) / len(self.samples)
+            sstot = sum([(s.absorbance - mean_y) ** 2 for s in self.samples])
+            r2 = 1 - ssres / sstot
+            log.info(f"Regression performance for A: ssres = {ssres}, sstot = {sstot}, r2 = {r2}")
         except IndexError:
             r2 = None
         log.info(f"data line regression: A={coefs[1]} * C + {coefs[0]}")
@@ -190,6 +194,14 @@ class Session:
                               x=[s.absorbance for s in self.samples],
                               deg=[0,1])
         concentration = float(coeffs[1] * sample.absorbance + coeffs[0])
+        try:
+            ssres = stats[0][0]
+            mean_y = sum([s.concentration for s in self.samples]) / len(self.samples)
+            sstot = sum([(s.concentration - mean_y) ** 2 for s in self.samples])
+            r2 = 1 - ssres / sstot
+            log.info(f"Regression performance for C: ssres = {ssres}, sstot = {sstot}, r2 = {r2}")
+        except IndexError:
+            r2 = None
         log.debug(f"computed concentration: {concentration}")
         return concentration
 
