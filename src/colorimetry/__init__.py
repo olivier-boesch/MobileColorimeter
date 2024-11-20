@@ -170,12 +170,17 @@ class Session:
         r2 is the residual R²
         return object : (a, r2)
         r2 is None if it can't be computed
+        source of calculus for r2 : https://jmeunierp8.github.io/ManuelJamovi/s12.html#s12_3
         """
         coefs, stats = poly.polyfit(x=[s.concentration for s in self.samples],
                                     y=[s.absorbance for s in self.samples],
                                     deg=[1,0], full=True)
         try:
-            r2 = 1-stats[0][0]
+            ssres =  stats[0][0]
+            mean_y = sum([s.absorbance for s in self.samples]) / len(self.samples)
+            sstot = sum([(s.absorbance - mean_y)**2 for s in self.samples])
+            r2 = 1- ssres / sstot
+            log.info(f"Regression performance: ssres = {ssres}, sstot = {sstot}, r2 = {r2}")
         except IndexError:
             r2 = None
         log.info(f"data line regression: A={coefs[1]} * C + {coefs[0]}")
@@ -186,10 +191,19 @@ class Session:
         computes the predicted concentration from given absorbance and the session data samples
         """
         sample.reference = self.reference
-        coeffs = poly.polyfit(y=[s.concentration for s in self.samples],
-                              x=[s.absorbance for s in self.samples],
-                              deg=[0,1])
+        coeffs, stats = poly.polyfit(y=[s.concentration for s in self.samples],
+                                     x=[s.absorbance for s in self.samples],
+                                     deg=[0,1],
+                                     full=True)
         concentration = float(coeffs[1] * sample.absorbance + coeffs[0])
+        try:
+            ssres =  stats[0][0]
+            mean_y = sum([s.absorbance for s in self.samples]) / len(self.samples)
+            sstot = sum([(s.absorbance - mean_y)**2 for s in self.samples])
+            r2 = 1- ssres / sstot
+            log.info(f"Regression performance: ssres = {ssres}, sstot = {sstot}, r2 = {r2}")
+        except IndexError:
+            r2 = None
         log.debug(f"computed concentration: {concentration}")
         return concentration
 
@@ -246,7 +260,7 @@ class Session:
         elements.append(Spacer(height=1 * units.cm, width=pagesizes.A4[0]))
         # equation
         b, a, r2 = self.absorbance_data_line
-        text = f"Equation : A = {a:.3e} C + {b:.3e}"
+        text = f"Equation : A = {a:.5e} C + {b:.5e}"
         if r2 is not None:
             text += f", R² = {r2:.5f}"
         p = Paragraph(text=text, style=styles.ParagraphStyle(name="body", font="Arial", fontSize=12, align="center", bold=True))
