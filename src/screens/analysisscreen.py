@@ -19,6 +19,7 @@ from math import isclose
 # UI elements
 kv_str: str = """
 #:import Graph kivy_garden.graph.Graph
+#:import platform kivy.utils.platform
 
 <DataGridItem>:
     orientation: "horizontal"
@@ -47,7 +48,7 @@ kv_str: str = """
         # upper space
         Label:
             size_hint_y: None
-            height: dp(200)
+            height: dp(200) if platform in ['android', 'ios'] else dp(0)
         # upper bar
         BoxLayout:
             orientation: "horizontal"
