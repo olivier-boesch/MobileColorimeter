@@ -190,18 +190,10 @@ class Session:
         computes the predicted concentration from given absorbance and the session data samples
         """
         sample.reference = self.reference
-        coeffs = poly.polyfit(y=[s.concentration for s in self.samples],
+        coefs = poly.polyfit(y=[s.concentration for s in self.samples],
                               x=[s.absorbance for s in self.samples],
                               deg=[0,1])
-        concentration = float(coeffs[1] * sample.absorbance + coeffs[0])
-        try:
-            ssres = stats[0][0]
-            mean_y = sum([s.concentration for s in self.samples]) / len(self.samples)
-            sstot = sum([(s.concentration - mean_y) ** 2 for s in self.samples])
-            r2 = 1 - ssres / sstot
-            log.info(f"Regression performance for C: ssres = {ssres}, sstot = {sstot}, r2 = {r2}")
-        except IndexError:
-            r2 = None
+        concentration = float(coefs[1] * sample.absorbance + coefs[0])
         log.debug(f"computed concentration: {concentration}")
         return concentration
 
