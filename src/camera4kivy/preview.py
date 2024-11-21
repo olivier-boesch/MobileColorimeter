@@ -190,7 +190,8 @@ class Preview(AnchorLayout):
 
     def image_scheduler(self):
         while self.camera_connected:
-            # Must pass pixels not Texture, becuase we are in a different
+            self._image_available.wait(0.5)  # wait a bit to preserve cpu (image ready with limit of 0.5s)
+            # Must pass pixels not Texture, because we are in a different
             # Thread
             if self._image_available.is_set():
                 self._image_available.clear()
